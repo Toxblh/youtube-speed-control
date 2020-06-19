@@ -145,20 +145,26 @@
 			"input": "Down Arrow",
 			"keycode": "40"
 		}, {
-			"input": "multiply",
+			"input": "multiply (*)",
 			"keycode": "106"
 		}, {
-			"input": "add",
+			"input": "add (+)",
 			"keycode": "107,187,61"
 		}, {
-			"input": "subtract",
+			"input": "subtract (-)",
 			"keycode": "109,189,173"
 		}, {
-			"input": "divide",
+			"input": "divide (/)",
 			"keycode": "111"
 		}, {
 			"input": "#",
 			"keycode": "35"
+		}, {
+			"input": "delete",
+			"keycode": "46"
+		}, {
+			"input": "insert",
+			"keycode": "45"
 		}
 	]
 }

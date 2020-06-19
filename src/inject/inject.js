@@ -193,7 +193,6 @@ browser.runtime.sendMessage({}, function(o) {
         'keydown',
         function(R) {
           var S = R.which
-          console.log('keydown', R)
           if (
             document.activeElement.nodeName === 'INPUT' &&
             document.activeElement.getAttribute('type') === 'text'

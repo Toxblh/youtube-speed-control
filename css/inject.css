@@ -6,7 +6,6 @@
     right: 2px;
     top: 2px;
     display: inline;
-    width: 96px;
     height: 24px;
 }
 
@@ -18,16 +17,19 @@
     right: 60px;
     top: 2px;
     display: inline;
-    width: 96px;
     height: 24px;
 }
 
 .btn {
     background: rgba(255, 255, 255, 0.5);
-    padding: 5px 5px 5px 5px;
+    height: 100%;
     text-decoration: none;
     font-size: 12px;
     border: 0px;
+}
+
+.btn::-moz-focus-inner {
+    border: 0;
 }
 
 .btn-left {

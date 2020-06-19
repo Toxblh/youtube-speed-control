@@ -1,158 +1,176 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Youtube Playback Speed Control</title>
+    <link rel="stylesheet" href="../../css/options.css" />
+  </head>
 
-<head>
-  <title>Youtube Playback Speed Control</title>
-  <link rel="stylesheet" href="../../css/options.css" />
-</head>
-
-<body>
-  <div>
-    <h1 class="title"><img class="logo" src="../../icons/icon48.png" />Youtube Playback Speed Control</h1>
-  </div>
-
-  <div class="tabs">
-
-    <div class="tab"><labeL>&nbsp;</labeL></div>
-    <div class="tab">
-      <input type="radio" id="tab-1" name="tab-group-1" checked />
-      <label for="tab-1">Home</label>
-
-      <div class="content">
-        <p>
-          With HTML5 Video playback on YouTube, you can speed up and slow down the currently watching
-          videos. I loved this feature. But still it was too many mouse clicks for me. So, this extension
-          was created to control the playback speed using keyboard. Press '+' to increase the playback
-          speed and '-' to decrease the playback speed. If '+' and '-' keys are already used by other
-          extension or you want to use different key, you can change this default keys from settings tab.
-        </p>
-        <p><img src="YouTubeSpeedOption.jpg" /></p>
-        <p>
-          This extension even works for the HTML5 YouTube player embedded in other website. Make sure that
-          the player is in focus. A website can embed multiple YouTube player and the keyboard shortcuts
-          will effect the currently playing one. If you feel it's not working for embeded player, it may
-          be that you haven't focused the embeded player.
-        </p>
-        <p><img src="YPSCIconIndicator.jpg" /></p>
-      </div>
-
+  <body>
+    <div>
+      <h1 class="title">
+        <img class="logo" src="../../icons/icon48.png" />Youtube Playback Speed Control
+      </h1>
     </div>
 
-    <div class="tab">
-      <input type="radio" id="tab-2" name="tab-group-1" />
-      <label for="tab-2">Settings</label>
+    <div class="tabs">
+      <div class="tab"><label>&nbsp;</label></div>
+      <div class="tab">
+        <input type="radio" id="tab-1" name="tab-group-1" checked />
+        <label for="tab-1">Home</label>
 
-      <div class="content">
-        <div class="row">
-          <h4>Change the playback speed increase/decrease key.</h4>
+        <div class="content">
+          <p>
+            With HTML5 Video playback on YouTube, you can speed up and slow down the
+            currently watching videos. I loved this feature. But still it was too many
+            mouse clicks for me. So, this extension was created to control the playback
+            speed using keyboard. Press '+' to increase the playback speed and '-' to
+            decrease the playback speed. If '+' and '-' keys are already used by other
+            extension or you want to use different key, you can change this default keys
+            from settings tab.
+          </p>
+          <p><img src="YouTubeSpeedOption.jpg" /></p>
+          <p>
+            This extension even works for the HTML5 YouTube player embedded in other
+            website. Make sure that the player is in focus. A website can embed multiple
+            YouTube player and the keyboard shortcuts will effect the currently playing
+            one. If you feel it's not working for embeded player, it may be that you
+            haven't focused the embeded player.
+          </p>
+          <p><img src="YPSCIconIndicator.jpg" /></p>
         </div>
-        <div class="row">
-          <div>
-            <div class="row">
-              Decrease speed
-              <select id="slowerKeyInput"></select>
-            </div>
-            <div class="row">
-              Increase speed
-              <select id="fasterKeyInput"></select>
-            </div>
-            <div class="row">
-              Reset speed
-              <select id="resetKeyInput"></select>
-            </div>
-            <div class="row">
-              Speed Change Step
-              <input id="speedStep" type="text" value="" />
-            </div>
-            <div class="row">
-              <input id="allowMouseWheel" type="checkbox" />
-              Enable Shift+MouseScroll to control playback speed
-            </div>
-            <div class="row">
-              <input id="mouseInvert" type="checkbox" />
-              Inverted MouseScroll
-            </div>
-            <div class="row">
-              <input id="rememberSpeed" type="checkbox" />
-              Remember Playback Speed For All Videos
-            </div>
-            <br />
-            <div class="row">
-              <label for="displayOption">Display Option</label>
-            </div>
-            <div class="row flex-row">
-              <div class="col">
-                <input type="radio" name="displayOption" id="Always" value="Always" />Always Display
-                Playback Panel
-                <p><img src="YPSCDisplayOptionAlways.jpg" /></p>
-              </div>
-              <div class="col">
-                <input type="radio" name="displayOption" id="FadeInFadeOut" value="FadeInFadeOut" checked />Hide/Show
-                Playback Panel
-                <p><img src="YPSCDisplayOptionHideShow.jpg" /></p>
-              </div>
-              <div class="col">
-                <input type="radio" name="displayOption" id="Simple" value="Simple" />Simple No Button
-                Playback Panel
-                <p><img src="YPSCDisplayOptionSimple.jpg" /></p>
-              </div>
-              <div class="col">
-                <input type="radio" name="displayOption" id="None" value="None" />Never Display Playback
-                Panel
-                <p><img src="YPSCDisplayOptionNone.jpg" /></p>
-              </div>
-            </div>
+      </div>
 
-            <div class="row">
-              <div>
-                <button id="save">
-                  Save
-                </button>
-                <button id="restore">
-                  Reset to default
-                </button>
+      <div class="tab">
+        <input type="radio" id="tab-2" name="tab-group-1" />
+        <label for="tab-2">Settings</label>
+
+        <div class="content">
+          <div class="row">
+            <h4>Change the playback speed increase/decrease key.</h4>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row">
+                Decrease speed
+                <select id="slowerKeyInput"></select>
               </div>
-              <div id="status"></div>
+              <div class="row">
+                Increase speed
+                <select id="fasterKeyInput"></select>
+              </div>
+              <div class="row">
+                Reset speed
+                <select id="resetKeyInput"></select>
+              </div>
+              <div class="row">
+                Speed Change Step
+                <input id="speedStep" type="text" value="" />
+              </div>
+              <div class="row">
+                <input id="allowMouseWheel" type="checkbox" />
+                Enable Shift+MouseScroll to control playback speed
+              </div>
+              <div class="row">
+                <input id="mouseInvert" type="checkbox" />
+                Inverted MouseScroll
+              </div>
+              <div class="row">
+                <input id="rememberSpeed" type="checkbox" />
+                Remember Playback Speed For All Videos
+              </div>
+              <br />
+              <div class="row">
+                <label for="displayOption">Display Option</label>
+              </div>
+              <div class="row flex-row">
+                <div class="col">
+                  <input
+                    type="radio"
+                    name="displayOption"
+                    id="Always"
+                    value="Always"
+                  />Always Display Playback Panel
+                  <p><img src="YPSCDisplayOptionAlways.jpg" /></p>
+                </div>
+                <div class="col">
+                  <input
+                    type="radio"
+                    name="displayOption"
+                    id="FadeInFadeOut"
+                    value="FadeInFadeOut"
+                    checked
+                  />Hide/Show Playback Panel
+                  <p><img src="YPSCDisplayOptionHideShow.jpg" /></p>
+                </div>
+                <div class="col">
+                  <input
+                    type="radio"
+                    name="displayOption"
+                    id="Simple"
+                    value="Simple"
+                  />Simple No Button Playback Panel
+                  <p><img src="YPSCDisplayOptionSimple.jpg" /></p>
+                </div>
+                <div class="col">
+                  <input type="radio" name="displayOption" id="None" value="None" />Never
+                  Display Playback Panel
+                  <p><img src="YPSCDisplayOptionNone.jpg" /></p>
+                </div>
+              </div>
+
+              <div class="row">
+                <div>
+                  <button id="save">
+                    Save
+                  </button>
+                  <button id="restore">
+                    Reset to default
+                  </button>
+                </div>
+                <div id="status"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="tab">
-      <input type="radio" id="tab-3" name="tab-group-1" />
-      <label for="tab-3">Features</label>
+      <div class="tab">
+        <input type="radio" id="tab-3" name="tab-group-1" />
+        <label for="tab-3">Features</label>
 
-      <div class="content">
-        <div>
-          <h3>Version 1.0.1</h3>
-          <ul>
-            <li>
-              Added homepage in description of addon
-            </li>
-            <li>
-              Full recreate option page. Deleted bootstrap lib.
-            </li>
-            <li>
-              Fixed incorrect presenting speed controls
-            </li>
-          </ul>
-          <h3>Version 1.0.0</h3>
-          <ul>
-            <li>
-              Basic functionality of changing youtube playback rate using keyboard.
-            </li>
-          </ul>
+        <div class="content">
+          <div>
+            <h3>Version 1.0.2</h3>
+            <ul>
+              <li>
+                Basic functionality of changing youtube playback rate using keyboard.
+              </li>
+            </ul>
+            <h3>Version 1.0.1</h3>
+            <ul>
+              <li>
+                Added homepage in description of addon
+              </li>
+              <li>
+                Full recreate option page. Deleted bootstrap lib.
+              </li>
+              <li>
+                Fixed incorrect presenting speed controls
+              </li>
+            </ul>
+            <h3>Version 1.0.0</h3>
+            <ul>
+              <li>
+                Basic functionality of changing youtube playback rate using keyboard.
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
+
+      <div class="empty-tab tab"><label>&nbsp;</label></div>
     </div>
 
-    <div class="empty-tab tab"><label>&nbsp;</label></div>
-  </div>
-
-  <script src="../../lib/jquery/jquery-3.4.1.min.js"></script>
-  <!-- <script src="../../lib/bootstrap/js/bootstrap.min.js"></script> -->
-  <script src="options.js"></script>
-</body>
-
+    <script src="options.js"></script>
+  </body>
 </html>

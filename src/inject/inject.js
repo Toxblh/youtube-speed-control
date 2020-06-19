@@ -1,4 +1,4 @@
-browser.runtime.sendMessage({}, function(o) {
+browser.runtime.sendMessage({}, function (o) {
   var p = {
     settings: {
       speed: 1.0,
@@ -9,13 +9,13 @@ browser.runtime.sendMessage({}, function(o) {
       displayOption: 'FadeInFadeOut',
       allowMouseWheel: true,
       mouseInvert: false,
-      rememberSpeed: false
-    }
+      rememberSpeed: false,
+    },
   }
 
   var q
 
-  browser.storage.sync.get(p.settings).then(function(M) {
+  browser.storage.sync.get(p.settings).then(function (M) {
     p.settings.speed = Number(M.speed)
     p.settings.speedStep = Number(M.speedStep)
     p.settings.slowerKeyCode = M.slowerKeyCode
@@ -32,20 +32,20 @@ browser.runtime.sendMessage({}, function(o) {
     if (document.readyState === 'complete') {
       clearInterval(q)
 
-      p.videoController = function(R) {
+      p.videoController = function (R) {
         this.video = R
         if (!p.settings.rememberSpeed) {
           p.settings.speed = 1.0
         }
 
         this.initializeControls()
-        R.addEventListener('play', function(V) {
+        R.addEventListener('play', function (V) {
           R.playbackRate = p.settings.speed
         })
 
         R.addEventListener(
           'ratechange',
-          function(V) {
+          function (V) {
             if (R.readyState === 0) {
               return
             }
@@ -59,15 +59,15 @@ browser.runtime.sendMessage({}, function(o) {
         R.playbackRate = p.settings.speed
       }
 
-      p.videoController.prototype.getSpeed = function() {
+      p.videoController.prototype.getSpeed = function () {
         return parseFloat(this.video.playbackRate).toFixed(2)
       }
 
-      p.videoController.prototype.remove = function() {
+      p.videoController.prototype.remove = function () {
         this.parentElement.removeChild(this)
       }
 
-      p.videoController.prototype.initializeControls = function() {
+      p.videoController.prototype.initializeControls = function () {
         var R = document.createDocumentFragment()
         var S = document.createElement('div')
         S.setAttribute('id', 'PlayBackRatePanel')
@@ -116,7 +116,7 @@ browser.runtime.sendMessage({}, function(o) {
 
         S.addEventListener(
           'click',
-          function(V) {
+          function (V) {
             if (V.target === U) {
               P('slower')
             } else if (V.target === NR) {
@@ -132,7 +132,7 @@ browser.runtime.sendMessage({}, function(o) {
 
         S.addEventListener(
           'dblclick',
-          function(V) {
+          function (V) {
             V.preventDefault()
             V.stopPropagation()
           },
@@ -149,7 +149,10 @@ browser.runtime.sendMessage({}, function(o) {
 
       function N() {
         var R = document.getElementById('PlayBackRatePanel')
-        if (p.settings.displayOption == 'FadeInFadeOut' && R.className != 'PlayBackRatePanelFullScreen') {
+        if (
+          p.settings.displayOption == 'FadeInFadeOut' &&
+          R.className != 'PlayBackRatePanelFullScreen'
+        ) {
           R.style.display = 'none'
         }
       }
@@ -183,7 +186,7 @@ browser.runtime.sendMessage({}, function(o) {
         var U = T.style.display
         if (U === 'none') {
           T.style.display = 'inline'
-          setTimeout(function() {
+          setTimeout(function () {
             T.style.display = U
           }, 300)
         }
@@ -191,7 +194,7 @@ browser.runtime.sendMessage({}, function(o) {
 
       document.addEventListener(
         'keydown',
-        function(R) {
+        function (R) {
           var S = R.which
           if (
             document.activeElement.nodeName === 'INPUT' &&
@@ -202,9 +205,13 @@ browser.runtime.sendMessage({}, function(o) {
 
           if (p.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))) {
             P('faster')
-          } else if (p.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))) {
+          } else if (
+            p.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))
+          ) {
             P('slower')
-          } else if (p.settings.resetKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))) {
+          } else if (
+            p.settings.resetKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))
+          ) {
             P('reset')
           }
           return false
@@ -212,7 +219,7 @@ browser.runtime.sendMessage({}, function(o) {
         true
       )
 
-      document.addEventListener('DOMNodeInserted', function(R) {
+      document.addEventListener('DOMNodeInserted', function (R) {
         var S = R.target || null
         if (S && S.nodeName === 'VIDEO') {
           new p.videoController(S)
@@ -222,7 +229,7 @@ browser.runtime.sendMessage({}, function(o) {
       if (p.settings.allowMouseWheel) {
         document.addEventListener(
           'wheel',
-          function(R) {
+          function (R) {
             if (R.shiftKey) {
               if ('deltaY' in R) {
                 rolled = R.deltaY

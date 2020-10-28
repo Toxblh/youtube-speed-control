@@ -85,6 +85,10 @@ browser.runtime.sendMessage({}, function (o) {
         NR.textContent = '>>'
         if (p.settings.displayOption == 'None') {
           S.style.display = 'none'
+          NR.style.display = 'none'
+          U.style.display = 'none'
+          T.style.border = 'none'
+          T.style.background = 'transparent'
         } else if (p.settings.displayOption == 'Always') {
           S.style.display = 'inline'
         } else if (p.settings.displayOption == 'Simple') {

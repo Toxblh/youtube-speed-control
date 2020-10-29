@@ -1,5 +1,15 @@
 browser.runtime.sendMessage({}, function (o) {
-  var p = {
+  /**
+   * Enum string values.
+   * @enum {string}
+   */
+  const RATE_ACTIONS = {
+    FASTER: 'faster',
+    SLOWER: 'slower',
+    RESET: 'reset',
+  }
+
+  var state = {
     settings: {
       speed: 1.0,
       speedStep: 0.25,
@@ -13,193 +23,198 @@ browser.runtime.sendMessage({}, function (o) {
     },
   }
 
-  var q
+  var refInterval
 
-  browser.storage.sync.get(p.settings).then(function (M) {
-    p.settings.speed = Number(M.speed)
-    p.settings.speedStep = Number(M.speedStep)
-    p.settings.slowerKeyCode = M.slowerKeyCode
-    p.settings.fasterKeyCode = M.fasterKeyCode
-    p.settings.resetKeyCode = M.resetKeyCode
-    p.settings.displayOption = M.displayOption
-    p.settings.allowMouseWheel = Boolean(M.allowMouseWheel)
-    p.settings.mouseInvert = Boolean(M.mouseInvert)
-    p.settings.rememberSpeed = Boolean(M.rememberSpeed)
-    q = setInterval(r, 10)
+  browser.storage.sync.get(state.settings).then(function (M) {
+    state.settings.speed = Number(M.speed)
+    state.settings.speedStep = Number(M.speedStep)
+    state.settings.slowerKeyCode = M.slowerKeyCode
+    state.settings.fasterKeyCode = M.fasterKeyCode
+    state.settings.resetKeyCode = M.resetKeyCode
+    state.settings.displayOption = M.displayOption
+    state.settings.allowMouseWheel = Boolean(M.allowMouseWheel)
+    state.settings.mouseInvert = Boolean(M.mouseInvert)
+    state.settings.rememberSpeed = Boolean(M.rememberSpeed)
+    refInterval = setInterval(refreshFn, 10)
   })
 
-  function r() {
+  function refreshFn() {
     if (document.readyState === 'complete') {
-      clearInterval(q)
+      clearInterval(refInterval)
 
-      p.videoController = function (R) {
-        this.video = R
-        if (!p.settings.rememberSpeed) {
-          p.settings.speed = 1.0
+      state.videoController = function (videoElem) {
+        this.video = videoElem
+        if (!state.settings.rememberSpeed) {
+          state.settings.speed = 1.0
         }
 
         this.initializeControls()
-        R.addEventListener('play', function (V) {
-          R.playbackRate = p.settings.speed
+        videoElem.addEventListener('play', function (e) {
+          videoElem.playbackRate = state.settings.speed
         })
 
-        R.addEventListener(
+        videoElem.addEventListener(
           'ratechange',
           function (V) {
-            if (R.readyState === 0) {
+            if (videoElem.readyState === 0) {
               return
             }
             var W = this.getSpeed()
             this.speedIndicator.textContent = W
-            p.settings.speed = W
+            state.settings.speed = W
             browser.storage.sync.set({ speed: W })
           }.bind(this)
         )
 
-        R.playbackRate = p.settings.speed
+        videoElem.playbackRate = state.settings.speed
       }
 
-      p.videoController.prototype.getSpeed = function () {
+      state.videoController.prototype.getSpeed = function () {
         return parseFloat(this.video.playbackRate).toFixed(2)
       }
 
-      p.videoController.prototype.remove = function () {
+      state.videoController.prototype.remove = function () {
         this.parentElement.removeChild(this)
       }
 
-      p.videoController.prototype.initializeControls = function () {
-        var R = document.createDocumentFragment()
-        var S = document.createElement('div')
-        S.setAttribute('id', 'PlayBackRatePanel')
-        S.className = 'PlayBackRatePanel'
-        var T = document.createElement('button')
-        T.setAttribute('id', 'PlayBackRate')
-        T.className = 'btn'
-        var U = document.createElement('button')
-        U.setAttribute('id', 'SpeedDown')
-        U.className = 'btn btn-left'
-        U.textContent = '<<'
-        var NR = document.createElement('button')
-        NR.setAttribute('id', 'SpeedUp')
-        NR.className = 'btn btn-right'
-        NR.textContent = '>>'
-        if (p.settings.displayOption == 'None') {
-          S.style.display = 'none'
-          NR.style.display = 'none'
-          U.style.display = 'none'
-          T.style.border = 'none'
-          T.style.background = 'transparent'
-        } else if (p.settings.displayOption == 'Always') {
-          S.style.display = 'inline'
-        } else if (p.settings.displayOption == 'Simple') {
-          S.style.display = 'inline'
-          NR.style.display = 'none'
-          U.style.display = 'none'
-          T.style.border = 'none'
-          T.style.background = 'transparent'
-        } else if (p.settings.displayOption == 'FadeInFadeOut') {
-          S.style.display = 'none'
+      state.videoController.prototype.initializeControls = function () {
+        var docFragment = document.createDocumentFragment()
+        var box = document.createElement('div')
+        box.setAttribute('id', 'PlayBackRatePanel')
+        box.className = 'PlayBackRatePanel'
+        var btnRateView = document.createElement('button')
+        btnRateView.setAttribute('id', 'PlayBackRate')
+        btnRateView.className = 'btn'
+        var btnDecreaseSpeed = document.createElement('button')
+        btnDecreaseSpeed.setAttribute('id', 'SpeedDown')
+        btnDecreaseSpeed.className = 'btn btn-left'
+        btnDecreaseSpeed.textContent = '<<'
+        var btnIncreaseSpeed = document.createElement('button')
+        btnIncreaseSpeed.setAttribute('id', 'SpeedUp')
+        btnIncreaseSpeed.className = 'btn btn-right'
+        btnIncreaseSpeed.textContent = '>>'
+        if (state.settings.displayOption == 'None') {
+          box.style.display = 'none'
+          btnIncreaseSpeed.style.display = 'none'
+          btnDecreaseSpeed.style.display = 'none'
+          btnRateView.style.border = 'none'
+          btnRateView.style.background = 'transparent'
+        } else if (state.settings.displayOption == 'Always') {
+          box.style.display = 'inline'
+        } else if (state.settings.displayOption == 'Simple') {
+          box.style.display = 'inline'
+          btnIncreaseSpeed.style.display = 'none'
+          btnDecreaseSpeed.style.display = 'none'
+          btnRateView.style.border = 'none'
+          btnRateView.style.background = 'transparent'
+        } else if (state.settings.displayOption == 'FadeInFadeOut') {
+          box.style.display = 'none'
         } else {
-          S.style.display = 'inline'
+          box.style.display = 'inline'
         }
 
-        S.appendChild(NR)
-        S.appendChild(T)
-        S.appendChild(U)
-        R.appendChild(S)
+        box.appendChild(btnIncreaseSpeed)
+        box.appendChild(btnRateView)
+        box.appendChild(btnDecreaseSpeed)
+        docFragment.appendChild(box)
 
-        this.video.parentElement.parentElement.insertBefore(R, this.video.parentElement)
+        this.video.parentElement.parentElement.insertBefore(docFragment, this.video.parentElement)
 
-        this.video.parentElement.parentElement.addEventListener('mouseover', M)
-        this.video.parentElement.parentElement.addEventListener('mouseout', N)
+        this.video.parentElement.parentElement.addEventListener('mouseover', handleMouseIn)
+        this.video.parentElement.parentElement.addEventListener('mouseout', handleMouseOut)
 
-        var NS = parseFloat(p.settings.speed).toFixed(2)
+        var currentSpeed = parseFloat(state.settings.speed).toFixed(2)
 
-        T.textContent = NS
-        this.speedIndicator = T
+        btnRateView.textContent = currentSpeed
+        this.speedIndicator = btnRateView
 
-        S.addEventListener(
+        box.addEventListener(
           'click',
-          function (V) {
-            if (V.target === U) {
-              P('slower')
-            } else if (V.target === NR) {
-              P('faster')
-            } else if (V.target === T) {
-              P('reset')
+          function (value) {
+            if (value.target === btnDecreaseSpeed) {
+              changeRate(RATE_ACTIONS.SLOWER)
+            } else if (value.target === btnIncreaseSpeed) {
+              changeRate(RATE_ACTIONS.FASTER)
+            } else if (value.target === btnRateView) {
+              changeRate(RATE_ACTIONS.RESET)
             }
-            V.preventDefault()
-            V.stopPropagation()
+            value.preventDefault()
+            value.stopPropagation()
           },
           true
         )
 
-        S.addEventListener(
+        box.addEventListener(
           'dblclick',
-          function (V) {
-            V.preventDefault()
-            V.stopPropagation()
+          function (value) {
+            value.preventDefault()
+            value.stopPropagation()
           },
           true
         )
       }
 
-      function M() {
-        var R = document.getElementById('PlayBackRatePanel')
-        if (p.settings.displayOption == 'FadeInFadeOut') {
-          R.style.display = 'inline'
+      function handleMouseIn() {
+        var box = document.getElementById('PlayBackRatePanel')
+        if (state.settings.displayOption == 'FadeInFadeOut') {
+          box.style.display = 'inline'
         }
       }
 
-      function N() {
-        var R = document.getElementById('PlayBackRatePanel')
+      function handleMouseOut() {
+        var box = document.getElementById('PlayBackRatePanel')
         if (
-          p.settings.displayOption == 'FadeInFadeOut' &&
-          R.className != 'PlayBackRatePanelFullScreen'
+          state.settings.displayOption == 'FadeInFadeOut' &&
+          box.className != 'PlayBackRatePanelFullScreen'
         ) {
-          R.style.display = 'none'
+          box.style.display = 'none'
         }
       }
 
-      function changeSpeed(videoElem, speed) {
+      function changeVideoSpeed(videoElem, speed) {
         videoElem.playbackRate = speed
       }
 
-      function P(R) {
-        var S = document.getElementsByTagName('video')
+      /**
+       *
+       * @param {RATE_ACTIONS} action
+       */
+      function changeRate(action) {
+        var videoElems = document.getElementsByTagName('video')
 
-        for (let videoElem of S) {
+        for (let videoElem of videoElems) {
           if (!videoElem.classList.contains('vc-cancelled')) {
             var newSpeed
 
-            if (R === 'faster') {
-              newSpeed = Math.min(videoElem.playbackRate + p.settings.speedStep, 16)
+            if (action === RATE_ACTIONS.FASTER) {
+              newSpeed = Math.min(videoElem.playbackRate + state.settings.speedStep, 16)
             }
-            if (R === 'slower') {
-              newSpeed = Math.max(videoElem.playbackRate - p.settings.speedStep, 0)
+            if (action === RATE_ACTIONS.SLOWER) {
+              newSpeed = Math.max(videoElem.playbackRate - state.settings.speedStep, 0)
             }
-            if (R === 'reset') {
+            if (action === RATE_ACTIONS.RESET) {
               newSpeed = Math.max(1, 0)
             }
 
-            changeSpeed(videoElem, newSpeed)
+            changeVideoSpeed(videoElem, newSpeed)
           }
         }
 
-        var T = document.getElementById('PlayBackRatePanel')
-        var U = T.style.display
-        if (U === 'none') {
-          T.style.display = 'inline'
+        var box = document.getElementById('PlayBackRatePanel')
+        var savedStyleDisplay = box.style.display
+        if (savedStyleDisplay === 'none') {
+          box.style.display = 'inline'
+
           setTimeout(function () {
-            T.style.display = U
+            box.style.display = savedStyleDisplay
           }, 300)
         }
       }
 
       document.addEventListener(
         'keydown',
-        function (R) {
-          var S = R.which
+        function (e) {
+          var keyPressed = e.which
           if (
             document.activeElement.nodeName === 'INPUT' &&
             document.activeElement.getAttribute('type') === 'text'
@@ -207,42 +222,39 @@ browser.runtime.sendMessage({}, function (o) {
             return false
           }
 
-          if (p.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))) {
-            P('faster')
-          } else if (
-            p.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))
-          ) {
-            P('slower')
-          } else if (
-            p.settings.resetKeyCode.match(new RegExp('(?:^|,)' + S + '(?:,|$)'))
-          ) {
-            P('reset')
+          if (state.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+            changeRate(RATE_ACTIONS.FASTER)
+          } else if (state.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+            changeRate(RATE_ACTIONS.SLOWER)
+          } else if (state.settings.resetKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+            changeRate(RATE_ACTIONS.RESET)
           }
+
           return false
         },
         true
       )
 
-      document.addEventListener('DOMNodeInserted', function (R) {
-        var S = R.target || null
-        if (S && S.nodeName === 'VIDEO') {
-          new p.videoController(S)
+      document.addEventListener('DOMNodeInserted', function (e) {
+        var domInserted = e.target || null
+        if (domInserted && domInserted.nodeName === 'VIDEO') {
+          new state.videoController(domInserted)
         }
       })
 
-      if (p.settings.allowMouseWheel) {
+      if (state.settings.allowMouseWheel) {
         document.addEventListener(
           'wheel',
-          function (R) {
-            if (R.shiftKey) {
-              if ('deltaY' in R) {
-                rolled = R.deltaY
-                if (p.settings.mouseInvert) {
-                  if (rolled > 0) P('faster')
-                  else if (rolled < 0) P('slower')
+          function (e) {
+            if (e.shiftKey) {
+              if ('deltaY' in e) {
+                rolled = e.deltaY
+                if (state.settings.mouseInvert) {
+                  if (rolled > 0) changeRate(RATE_ACTIONS.FASTER)
+                  else if (rolled < 0) changeRate(RATE_ACTIONS.SLOWER)
                 } else {
-                  if (rolled > 0) P('slower')
-                  else if (rolled < 0) P('faster')
+                  if (rolled > 0) changeRate(RATE_ACTIONS.SLOWER)
+                  else if (rolled < 0) changeRate(RATE_ACTIONS.FASTER)
                 }
               }
             }
@@ -252,11 +264,11 @@ browser.runtime.sendMessage({}, function (o) {
       }
 
       function onFullscreen() {
-        var R = document.getElementById('PlayBackRatePanel')
+        var box = document.getElementById('PlayBackRatePanel')
         if (document.fullscreenElement !== null) {
-          R.className = 'PlayBackRatePanelFullScreen'
+          box.className = 'PlayBackRatePanelFullScreen'
         } else {
-          R.className = 'PlayBackRatePanel'
+          box.className = 'PlayBackRatePanel'
         }
       }
 
@@ -264,9 +276,9 @@ browser.runtime.sendMessage({}, function (o) {
       document.addEventListener('mozfullscreenchange', onFullscreen, false)
       document.addEventListener('fullscreenchange', onFullscreen, false)
 
-      var Q = document.getElementsByTagName('video')
-      for (let R of Q) {
-        var S = new p.videoController(R)
+      var videoElements = document.getElementsByTagName('video')
+      for (let videoElement of videoElements) {
+        new state.videoController(videoElement)
       }
     }
   }

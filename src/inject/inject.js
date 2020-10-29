@@ -25,16 +25,16 @@ browser.runtime.sendMessage({}, function (o) {
 
   var refInterval
 
-  browser.storage.sync.get(state.settings).then(function (M) {
-    state.settings.speed = Number(M.speed)
-    state.settings.speedStep = Number(M.speedStep)
-    state.settings.slowerKeyCode = M.slowerKeyCode
-    state.settings.fasterKeyCode = M.fasterKeyCode
-    state.settings.resetKeyCode = M.resetKeyCode
-    state.settings.displayOption = M.displayOption
-    state.settings.allowMouseWheel = Boolean(M.allowMouseWheel)
-    state.settings.mouseInvert = Boolean(M.mouseInvert)
-    state.settings.rememberSpeed = Boolean(M.rememberSpeed)
+  browser.storage.sync.get(state.settings).then(function (storage) {
+    state.settings.speed = Number(storage.speed)
+    state.settings.speedStep = Number(storage.speedStep)
+    state.settings.slowerKeyCode = storage.slowerKeyCode
+    state.settings.fasterKeyCode = storage.fasterKeyCode
+    state.settings.resetKeyCode = storage.resetKeyCode
+    state.settings.displayOption = storage.displayOption
+    state.settings.allowMouseWheel = Boolean(storage.allowMouseWheel)
+    state.settings.mouseInvert = Boolean(storage.mouseInvert)
+    state.settings.rememberSpeed = Boolean(storage.rememberSpeed)
     refInterval = setInterval(refreshFn, 10)
   })
 
@@ -55,14 +55,14 @@ browser.runtime.sendMessage({}, function (o) {
 
         videoElem.addEventListener(
           'ratechange',
-          function (V) {
+          function () {
             if (videoElem.readyState === 0) {
               return
             }
-            var W = this.getSpeed()
-            this.speedIndicator.textContent = W
-            state.settings.speed = W
-            browser.storage.sync.set({ speed: W })
+            var currentSpeed = this.getSpeed()
+            this.speedIndicator.textContent = currentSpeed
+            state.settings.speed = currentSpeed
+            browser.storage.sync.set({ speed: currentSpeed })
           }.bind(this)
         )
 

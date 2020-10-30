@@ -11,8 +11,8 @@ browser.runtime.sendMessage({}, function (o) {
 
   var state = {
     settings: {
-      speed: 1.0,
-      speedStep: 0.25,
+      speed: 100, // == 1.0
+      speedStep: 25, // == 0.25
       slowerKeyCode: '109,189,173',
       fasterKeyCode: '107,187,61',
       resetKeyCode: '106',
@@ -26,8 +26,8 @@ browser.runtime.sendMessage({}, function (o) {
   var refInterval
 
   browser.storage.sync.get(state.settings).then(function (storage) {
-    state.settings.speed = Number(storage.speed)
-    state.settings.speedStep = Number(storage.speedStep)
+    state.settings.speed = Number(storage.speed) * 100
+    state.settings.speedStep = Number(storage.speedStep) * 100
     state.settings.slowerKeyCode = storage.slowerKeyCode
     state.settings.fasterKeyCode = storage.fasterKeyCode
     state.settings.resetKeyCode = storage.resetKeyCode
@@ -35,8 +35,20 @@ browser.runtime.sendMessage({}, function (o) {
     state.settings.allowMouseWheel = Boolean(storage.allowMouseWheel)
     state.settings.mouseInvert = Boolean(storage.mouseInvert)
     state.settings.rememberSpeed = Boolean(storage.rememberSpeed)
-    refInterval = setInterval(refreshFn, 10)
+    refInterval = setInterval(refreshFn, 16)
   })
+
+  function getStateSpeed() {
+    return state.settings.speed
+  }
+
+  function getPlaybackReadySpeed() {
+    return getStateSpeed() / 100
+  }
+
+  function setStateSpeed(value) {
+    state.settings.speed = value
+  }
 
   function refreshFn() {
     if (document.readyState === 'complete') {
@@ -45,12 +57,13 @@ browser.runtime.sendMessage({}, function (o) {
       state.videoController = function (videoElem) {
         this.video = videoElem
         if (!state.settings.rememberSpeed) {
-          state.settings.speed = 1.0
+          setStateSpeed(100)
         }
 
         this.initializeControls()
-        videoElem.addEventListener('play', function (e) {
-          videoElem.playbackRate = state.settings.speed
+
+        videoElem.addEventListener('play', function () {
+          videoElem.playbackRate = getPlaybackReadySpeed()
         })
 
         videoElem.addEventListener(
@@ -59,18 +72,18 @@ browser.runtime.sendMessage({}, function (o) {
             if (videoElem.readyState === 0) {
               return
             }
-            var currentSpeed = this.getSpeed()
-            this.speedIndicator.textContent = currentSpeed
-            state.settings.speed = currentSpeed
-            browser.storage.sync.set({ speed: currentSpeed })
+            var currentSpeed = this.getVideoSpeed()
+            setStateSpeed(currentSpeed)
+            this.speedIndicator.textContent = (currentSpeed / 100).toFixed(2)
+            browser.storage.sync.set({ speed: currentSpeed / 100 })
           }.bind(this)
         )
 
-        videoElem.playbackRate = state.settings.speed
+        videoElem.playbackRate = getPlaybackReadySpeed()
       }
 
-      state.videoController.prototype.getSpeed = function () {
-        return parseFloat(this.video.playbackRate).toFixed(2)
+      state.videoController.prototype.getVideoSpeed = function () {
+        return Number(String((this.video.playbackRate).toFixed(2)).replace('.','')) // trick how to parse like 1.12 to 112 without any phantom 0.(0)1
       }
 
       state.videoController.prototype.remove = function () {
@@ -123,9 +136,9 @@ browser.runtime.sendMessage({}, function (o) {
         this.video.parentElement.parentElement.addEventListener('mouseover', handleMouseIn)
         this.video.parentElement.parentElement.addEventListener('mouseout', handleMouseOut)
 
-        var currentSpeed = parseFloat(state.settings.speed).toFixed(2)
+        var currentSpeed =  getStateSpeed() / 100
 
-        btnRateView.textContent = currentSpeed
+        btnRateView.textContent = currentSpeed.toFixed(2)
         this.speedIndicator = btnRateView
 
         box.addEventListener(
@@ -172,7 +185,7 @@ browser.runtime.sendMessage({}, function (o) {
       }
 
       function changeVideoSpeed(videoElem, speed) {
-        videoElem.playbackRate = speed
+        videoElem.playbackRate = speed / 100
       }
 
       /**
@@ -187,13 +200,18 @@ browser.runtime.sendMessage({}, function (o) {
             var newSpeed
 
             if (action === RATE_ACTIONS.FASTER) {
-              newSpeed = Math.min(videoElem.playbackRate + state.settings.speedStep, 16)
+              newSpeed = Math.min(getStateSpeed() + state.settings.speedStep, 1600)
             }
             if (action === RATE_ACTIONS.SLOWER) {
-              newSpeed = Math.max(videoElem.playbackRate - state.settings.speedStep, 0)
+              newSpeed = Math.max(getStateSpeed() - state.settings.speedStep, 0)
             }
             if (action === RATE_ACTIONS.RESET) {
-              newSpeed = Math.max(1, 0)
+              if (getStateSpeed() === 100) {
+                newSpeed = state.resetedSpeed
+              } else {
+                state.resetedSpeed = getStateSpeed()
+                newSpeed = 100
+              }
             }
 
             changeVideoSpeed(videoElem, newSpeed)
@@ -211,56 +229,46 @@ browser.runtime.sendMessage({}, function (o) {
         }
       }
 
-      document.addEventListener(
-        'keydown',
-        function (e) {
-          var keyPressed = e.which
-          if (
-            document.activeElement.nodeName === 'INPUT' &&
-            document.activeElement.getAttribute('type') === 'text'
-          ) {
-            return false
+      function handleWheel(e) {
+        if (e.shiftKey) {
+          if ('deltaY' in e) {
+            rolled = e.deltaY
+            if (state.settings.mouseInvert) {
+              if (rolled > 0) changeRate(RATE_ACTIONS.FASTER)
+              else if (rolled < 0) changeRate(RATE_ACTIONS.SLOWER)
+            } else {
+              if (rolled > 0) changeRate(RATE_ACTIONS.SLOWER)
+              else if (rolled < 0) changeRate(RATE_ACTIONS.FASTER)
+            }
           }
+        }
+      }
 
-          if (state.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
-            changeRate(RATE_ACTIONS.FASTER)
-          } else if (state.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
-            changeRate(RATE_ACTIONS.SLOWER)
-          } else if (state.settings.resetKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
-            changeRate(RATE_ACTIONS.RESET)
-          }
-
-          return false
-        },
-        true
-      )
-
-      document.addEventListener('DOMNodeInserted', function (e) {
+      function handleDOMInserted(e) {
         var domInserted = e.target || null
         if (domInserted && domInserted.nodeName === 'VIDEO') {
           new state.videoController(domInserted)
         }
-      })
+      }
 
-      if (state.settings.allowMouseWheel) {
-        document.addEventListener(
-          'wheel',
-          function (e) {
-            if (e.shiftKey) {
-              if ('deltaY' in e) {
-                rolled = e.deltaY
-                if (state.settings.mouseInvert) {
-                  if (rolled > 0) changeRate(RATE_ACTIONS.FASTER)
-                  else if (rolled < 0) changeRate(RATE_ACTIONS.SLOWER)
-                } else {
-                  if (rolled > 0) changeRate(RATE_ACTIONS.SLOWER)
-                  else if (rolled < 0) changeRate(RATE_ACTIONS.FASTER)
-                }
-              }
-            }
-          },
-          false
-        )
+      function handleKeyDown(e) {
+        var keyPressed = e.which
+        if (
+          document.activeElement.nodeName === 'INPUT' &&
+          document.activeElement.getAttribute('type') === 'text'
+        ) {
+          return false
+        }
+
+        if (state.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+          changeRate(RATE_ACTIONS.FASTER)
+        } else if (state.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+          changeRate(RATE_ACTIONS.SLOWER)
+        } else if (state.settings.resetKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+          changeRate(RATE_ACTIONS.RESET)
+        }
+
+        return false
       }
 
       function onFullscreen() {
@@ -272,6 +280,12 @@ browser.runtime.sendMessage({}, function (o) {
         }
       }
 
+      if (state.settings.allowMouseWheel) {
+        document.addEventListener('wheel', handleWheel, false)
+      }
+
+      document.addEventListener('keydown', handleKeyDown, true)
+      document.addEventListener('DOMNodeInserted', handleDOMInserted)
       document.addEventListener('webkitfullscreenchange', onFullscreen, false)
       document.addEventListener('mozfullscreenchange', onFullscreen, false)
       document.addEventListener('fullscreenchange', onFullscreen, false)

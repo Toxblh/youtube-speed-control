@@ -1,8 +1,8 @@
 {
   "name": "Youtube Playback Speed Control",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "manifest_version": 2,
-  "description": "Control speed of the youtube playback using keyboard. Press '+' to increase and '-' to decrease the playback speed.",
+  "description": "Control speed of the youtube playback using a keyboard. Press '+' to increase and '-' to decrease the playback speed.",
   "homepage_url": "https://github.com/Toxblh/youtube-speed-control",
   "icons": {
     "16": "icons/icon16.png",
@@ -18,7 +18,7 @@
     "scripts": ["src/background.js"]
   },
   "page_action": {
-    "default_title": "Control speed of the youtube playback using keyboard.",
+    "default_title": "Control speed of the youtube playback using a keyboard.",
     "default_icon": {
       "19": "icons/icon19.png"
     }

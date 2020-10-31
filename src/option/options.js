@@ -82,8 +82,7 @@ function resetStorage() {
   })
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  loadFromStorage()
+function handleDOMContentLoaded() {
   document.getElementById('save').addEventListener('click', onSave)
   document.getElementById('restore').addEventListener('click', resetStorage)
   document.getElementById('speedStep').addEventListener('keypress', keyPressHandler)
@@ -106,8 +105,12 @@ document.addEventListener('DOMContentLoaded', function () {
         slowerKeySelect.append(new Option(element.input, element.keycode))
         resetKeySelect.append(new Option(element.input, element.keycode))
       })
+
+      loadFromStorage()
     })
     .catch((err) => {
       console.error(err)
     })
-})
+}
+
+document.addEventListener('DOMContentLoaded', handleDOMContentLoaded)

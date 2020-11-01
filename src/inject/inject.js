@@ -39,11 +39,11 @@ browser.runtime.sendMessage({}, function (o) {
   })
 
   function getStateSpeed() {
-    return isNaN(Number(state.settings.speed)) ? Number(state.settings.speed) : 100
+    return isNaN(Number(state.settings.speed)) ? 100 : Number(state.settings.speed)
   }
 
   function getStateStepSpeed() {
-    return isNaN(Number(state.settings.speedStep)) ? Number(state.settings.speedStep) : 25
+    return isNaN(Number(state.settings.speedStep)) ? 25 : Number(state.settings.speedStep)
   }
 
   function getPlaybackReadySpeed() {

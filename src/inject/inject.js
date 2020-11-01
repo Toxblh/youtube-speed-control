@@ -11,8 +11,8 @@ browser.runtime.sendMessage({}, function (o) {
 
   var state = {
     settings: {
-      speed: 100, // == 1.0
-      speedStep: 25, // == 0.25
+      speed: 1,
+      speedStep: 0.25,
       slowerKeyCode: '109,189,173',
       fasterKeyCode: '107,187,61',
       resetKeyCode: '106',

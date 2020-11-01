@@ -39,7 +39,11 @@ browser.runtime.sendMessage({}, function (o) {
   })
 
   function getStateSpeed() {
-    return state.settings.speed
+    return isNaN(Number(state.settings.speed)) ? Number(state.settings.speed) : 100
+  }
+
+  function getStateStepSpeed() {
+    return isNaN(Number(state.settings.speedStep)) ? Number(state.settings.speedStep) : 25
   }
 
   function getPlaybackReadySpeed() {
@@ -47,7 +51,7 @@ browser.runtime.sendMessage({}, function (o) {
   }
 
   function setStateSpeed(value) {
-    state.settings.speed = value
+    state.settings.speed = Number(value)
   }
 
   function refreshFn() {
@@ -92,20 +96,25 @@ browser.runtime.sendMessage({}, function (o) {
 
       state.videoController.prototype.initializeControls = function () {
         var docFragment = document.createDocumentFragment()
+
         var box = document.createElement('div')
         box.setAttribute('id', 'PlayBackRatePanel')
         box.className = 'PlayBackRatePanel'
+
         var btnRateView = document.createElement('button')
         btnRateView.setAttribute('id', 'PlayBackRate')
         btnRateView.className = 'btn'
+
         var btnDecreaseSpeed = document.createElement('button')
         btnDecreaseSpeed.setAttribute('id', 'SpeedDown')
         btnDecreaseSpeed.className = 'btn btn-left'
         btnDecreaseSpeed.textContent = '<<'
+
         var btnIncreaseSpeed = document.createElement('button')
         btnIncreaseSpeed.setAttribute('id', 'SpeedUp')
         btnIncreaseSpeed.className = 'btn btn-right'
         btnIncreaseSpeed.textContent = '>>'
+
         if (state.settings.displayOption == 'None') {
           box.style.display = 'none'
           btnIncreaseSpeed.style.display = 'none'
@@ -200,10 +209,10 @@ browser.runtime.sendMessage({}, function (o) {
             var newSpeed
 
             if (action === RATE_ACTIONS.FASTER) {
-              newSpeed = Math.min(getStateSpeed() + state.settings.speedStep, 1600)
+              newSpeed = Math.min(getStateSpeed() + getStateStepSpeed(), 1600)
             }
             if (action === RATE_ACTIONS.SLOWER) {
-              newSpeed = Math.max(getStateSpeed() - state.settings.speedStep, 0)
+              newSpeed = Math.max(getStateSpeed() - getStateStepSpeed(), 0)
             }
             if (action === RATE_ACTIONS.RESET) {
               if (getStateSpeed() === 100) {

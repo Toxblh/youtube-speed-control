@@ -9,3 +9,5 @@ A simple way to control speed of the youtube playback in [firefox](https://addon
 Control speed of the youtube playback using keyboard.
 Press '+' to increase and '-' to decrease the playback speed.
 Or Shift + mouse wheel .
+
+That plugin doesn't work together with "Enhancer for YouTube™"

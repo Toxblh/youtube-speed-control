@@ -20,7 +20,7 @@
   height: 24px;
 }
 
-.btn {
+.ysc-btn {
   background: rgba(255, 255, 255, 0.5);
   height: 100%;
   text-decoration: none;
@@ -28,11 +28,11 @@
   border: 0px;
 }
 
-.btn::-moz-focus-inner {
+.ysc-btn::-moz-focus-inner {
   border: 0;
 }
 
-.btn-left {
+.ysc-btn-left {
   -moz-border-radius-topleft: 5px;
   -webkit-border-top-left-radius: 5px;
   border-top-left-radius: 5px;
@@ -41,7 +41,7 @@
   border-bottom-left-radius: 5px;
 }
 
-.btn-right {
+.ysc-btn-right {
   -moz-border-radius-topright: 5px;
   -webkit-border-top-right-radius: 5px;
   border-top-right-radius: 5px;
@@ -50,21 +50,25 @@
   border-bottom-right-radius: 5px;
 }
 
-.btn:hover {
+.ysc-btn:hover {
   background: rgba(255, 255, 255, 0.8);
   text-decoration: none;
 }
 
-.btn:focus {
+.ysc-btn:focus {
   outline: 0;
 }
 
 #SpeedDown {
   float: right;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0 10px;
 }
 
 #SpeedUp {
   float: right;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0 10px;
 }
 
 #PlayBackRate {

@@ -103,16 +103,16 @@ browser.runtime.sendMessage({}, function (o) {
 
         var btnRateView = document.createElement('button')
         btnRateView.setAttribute('id', 'PlayBackRate')
-        btnRateView.className = 'btn'
+        btnRateView.className = 'ysc-btn'
 
         var btnDecreaseSpeed = document.createElement('button')
         btnDecreaseSpeed.setAttribute('id', 'SpeedDown')
-        btnDecreaseSpeed.className = 'btn btn-left'
+        btnDecreaseSpeed.className = 'ysc-btn ysc-btn-left'
         btnDecreaseSpeed.textContent = '<<'
 
         var btnIncreaseSpeed = document.createElement('button')
         btnIncreaseSpeed.setAttribute('id', 'SpeedUp')
-        btnIncreaseSpeed.className = 'btn btn-right'
+        btnIncreaseSpeed.className = 'ysc-btn ysc-btn-right'
         btnIncreaseSpeed.textContent = '>>'
 
         if (state.settings.displayOption == 'None') {

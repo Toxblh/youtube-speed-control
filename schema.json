@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "speedStep": {
+      "type": "number"
+    },
+
+    "slowerKeyCode": {
+      "type": "string"
+    },
+
+    "fasterKeyCode": {
+      "type": "string"
+    },
+
+    "resetKeyCode": {
+      "type": "string"
+    },
+
+    "displayOption": {
+      "type": "string"
+    },
+
+    "allowMouseWheel": {
+      "type": "boolean"
+    },
+
+    "mouseInvert": {
+      "type": "boolean"
+    },
+    
+    "rememberSpeed": {
+      "type": "boolean"
+    }
+  }
+}

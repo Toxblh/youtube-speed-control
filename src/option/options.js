@@ -11,10 +11,40 @@ var defaultStorage = {
 
 function keyPressHandler(event) {
   var kCode = String.fromCharCode(event.keyCode)
-  if (!/[\d\.]$/.test(kCode) || !/^\d+(\.\d*)?$/.test(event.target.value + kCode)) {
+  if (
+    !/[\d\.]$/.test(kCode) ||
+    !/^\d+(\.\d*)?$/.test(event.target.value + kCode)
+  ) {
     event.preventDefault()
     event.stopPropagation()
   }
+}
+
+const setStorage = (data) => {
+  if (chrome) {
+    return new Promise((resolve, reject) =>
+      chrome.storage.sync.set(data, () =>
+        chrome.runtime.lastError
+          ? reject(Error(chrome.runtime.lastError.message))
+          : resolve()
+      )
+    )
+  }
+
+  return browser.storage.sync.set(data)
+}
+
+const getStorage = (key) => {
+  if (chrome) {
+    return new Promise((resolve, reject) =>
+      chrome.storage.sync.get(key, (result) =>
+        chrome.runtime.lastError
+          ? reject(Error(chrome.runtime.lastError.message))
+          : resolve(result)
+      )
+    )
+  }
+  return browser.storage.sync.get(key)
 }
 
 function onSave() {
@@ -37,28 +67,26 @@ function onSave() {
 
   speedStep = isNaN(speedStep) ? defaultStorage.speedStep : Number(speedStep)
 
-  browser.storage.sync
-    .set({
-      speedStep: speedStep,
-      slowerKeyCode: slowerKeyInput,
-      fasterKeyCode: fasterKeyInput,
-      resetKeyCode: resetKeyInput,
-      displayOption: displayValue,
-      mouseInvert: mouseInvert,
-      allowMouseWheel: allowMouseWheel,
-      rememberSpeed: rememberSpeed,
-    })
-    .then(function () {
-      var statusElem = document.getElementById('status')
-      statusElem.textContent = 'Options saved'
-      setTimeout(function () {
-        statusElem.textContent = ''
-      }, 1000)
-    })
+  setStorage({
+    speedStep: speedStep,
+    slowerKeyCode: slowerKeyInput,
+    fasterKeyCode: fasterKeyInput,
+    resetKeyCode: resetKeyInput,
+    displayOption: displayValue,
+    mouseInvert: mouseInvert,
+    allowMouseWheel: allowMouseWheel,
+    rememberSpeed: rememberSpeed,
+  }).then(function () {
+    var statusElem = document.getElementById('status')
+    statusElem.textContent = 'Options saved'
+    setTimeout(function () {
+      statusElem.textContent = ''
+    }, 1000)
+  })
 }
 
 function loadFromStorage() {
-  browser.storage.sync.get(defaultStorage).then(function (store) {
+  getStorage(defaultStorage).then(function (store) {
     document.getElementById('speedStep').value = store.speedStep.toFixed(2)
     document.getElementById('slowerKeyInput').value = store.slowerKeyCode
     document.getElementById('fasterKeyInput').value = store.fasterKeyCode
@@ -71,7 +99,7 @@ function loadFromStorage() {
 }
 
 function resetStorage() {
-  browser.storage.sync.set(defaultStorage).then(function () {
+  setStorage(defaultStorage).then(function () {
     loadFromStorage()
     var statusElem = document.getElementById('status')
     statusElem.textContent = 'Default options restored'
@@ -85,7 +113,9 @@ function resetStorage() {
 function handleDOMContentLoaded() {
   document.getElementById('save').addEventListener('click', onSave)
   document.getElementById('restore').addEventListener('click', resetStorage)
-  document.getElementById('speedStep').addEventListener('keypress', keyPressHandler)
+  document
+    .getElementById('speedStep')
+    .addEventListener('keypress', keyPressHandler)
 
   var fasterKeySelect = document.getElementById('fasterKeyInput')
   var slowerKeySelect = document.getElementById('slowerKeyInput')

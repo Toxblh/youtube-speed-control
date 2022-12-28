@@ -1,3 +1,5 @@
+[🇷🇺 Русский](README.ru.md)
+
 <img src="icons/icon128.png" align="left">
 
 # Youtube speed control  

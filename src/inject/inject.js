@@ -25,7 +25,34 @@ browser.runtime.sendMessage({}, function (o) {
 
   var refInterval
 
-  browser.storage.sync.get(state.settings).then(function (storage) {
+  const setStorage = (data) => {
+    if (chrome) {
+      return new Promise((resolve, reject) =>
+        chrome.storage.sync.set(data, () =>
+          chrome.runtime.lastError
+            ? reject(Error(chrome.runtime.lastError.message))
+            : resolve()
+        )
+      )
+    }
+
+    return browser.storage.sync.set(data)
+  }
+
+  const getStorage = (key) => {
+    if (chrome) {
+      return new Promise((resolve, reject) =>
+        chrome.storage.sync.get(key, (result) =>
+          chrome.runtime.lastError
+            ? reject(Error(chrome.runtime.lastError.message))
+            : resolve(result)
+        )
+      )
+    }
+    return browser.storage.sync.get(key)
+  }
+
+  getStorage(state.settings).then(function (storage) {
     state.settings.speed = Number(storage.speed) * 100
     state.settings.speedStep = Number(storage.speedStep) * 100
     state.settings.slowerKeyCode = storage.slowerKeyCode
@@ -39,11 +66,15 @@ browser.runtime.sendMessage({}, function (o) {
   })
 
   function getStateSpeed() {
-    return isNaN(Number(state.settings.speed)) ? 100 : Number(state.settings.speed)
+    return isNaN(Number(state.settings.speed))
+      ? 100
+      : Number(state.settings.speed)
   }
 
   function getStateStepSpeed() {
-    return isNaN(Number(state.settings.speedStep)) ? 25 : Number(state.settings.speedStep)
+    return isNaN(Number(state.settings.speedStep))
+      ? 25
+      : Number(state.settings.speedStep)
   }
 
   function getPlaybackReadySpeed() {
@@ -79,7 +110,7 @@ browser.runtime.sendMessage({}, function (o) {
             var currentSpeed = this.getVideoSpeed()
             setStateSpeed(currentSpeed)
             this.speedIndicator.textContent = (currentSpeed / 100).toFixed(2)
-            browser.storage.sync.set({ speed: currentSpeed / 100 })
+            setStorage({ speed: currentSpeed / 100 })
           }.bind(this)
         )
 
@@ -87,7 +118,9 @@ browser.runtime.sendMessage({}, function (o) {
       }
 
       state.videoController.prototype.getVideoSpeed = function () {
-        return Number(String((this.video.playbackRate).toFixed(2)).replace('.','')) // trick how to parse like 1.12 to 112 without any phantom 0.(0)1
+        return Number(
+          String(this.video.playbackRate.toFixed(2)).replace('.', '')
+        ) // trick how to parse like 1.12 to 112 without any phantom 0.(0)1
       }
 
       state.videoController.prototype.remove = function () {
@@ -140,12 +173,21 @@ browser.runtime.sendMessage({}, function (o) {
         box.appendChild(btnDecreaseSpeed)
         docFragment.appendChild(box)
 
-        this.video.parentElement.parentElement.insertBefore(docFragment, this.video.parentElement)
+        this.video.parentElement.parentElement.insertBefore(
+          docFragment,
+          this.video.parentElement
+        )
 
-        this.video.parentElement.parentElement.addEventListener('mouseover', handleMouseIn)
-        this.video.parentElement.parentElement.addEventListener('mouseout', handleMouseOut)
+        this.video.parentElement.parentElement.addEventListener(
+          'mouseover',
+          handleMouseIn
+        )
+        this.video.parentElement.parentElement.addEventListener(
+          'mouseout',
+          handleMouseOut
+        )
 
-        var currentSpeed =  getStateSpeed() / 100
+        var currentSpeed = getStateSpeed() / 100
 
         btnRateView.textContent = currentSpeed.toFixed(2)
         this.speedIndicator = btnRateView
@@ -269,11 +311,23 @@ browser.runtime.sendMessage({}, function (o) {
           return false
         }
 
-        if (state.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+        if (
+          state.settings.fasterKeyCode.match(
+            new RegExp('(?:^|,)' + keyPressed + '(?:,|$)')
+          )
+        ) {
           changeRate(RATE_ACTIONS.FASTER)
-        } else if (state.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+        } else if (
+          state.settings.slowerKeyCode.match(
+            new RegExp('(?:^|,)' + keyPressed + '(?:,|$)')
+          )
+        ) {
           changeRate(RATE_ACTIONS.SLOWER)
-        } else if (state.settings.resetKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
+        } else if (
+          state.settings.resetKeyCode.match(
+            new RegExp('(?:^|,)' + keyPressed + '(?:,|$)')
+          )
+        ) {
           changeRate(RATE_ACTIONS.RESET)
         }
 

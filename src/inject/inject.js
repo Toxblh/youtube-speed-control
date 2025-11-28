@@ -16,6 +16,12 @@ browser.runtime.sendMessage({}, function (o) {
       slowerKeyCode: '109,189,173',
       fasterKeyCode: '107,187,61',
       resetKeyCode: '106',
+      seekSmallStep: 5,
+      seekLargeStep: 10,
+      seekLeftKeyCode: '37',
+      seekRightKeyCode: '39',
+      seekRewindKeyCode: '74',
+      seekAdvanceKeyCode: '76',
       displayOption: 'FadeInFadeOut',
       allowMouseWheel: true,
       mouseInvert: false,
@@ -24,6 +30,7 @@ browser.runtime.sendMessage({}, function (o) {
   }
 
   var refInterval
+  var feedbackTimeout = null;
 
   const setStorage = (data) => {
     if (chrome) {
@@ -107,6 +114,8 @@ browser.runtime.sendMessage({}, function (o) {
             if (videoElem.readyState === 0) {
               return
             }
+
+            if (feedbackTimeout) return;
             var currentSpeed = this.getVideoSpeed()
             setStateSpeed(currentSpeed)
             this.speedIndicator.textContent = (currentSpeed / 100).toFixed(2)
@@ -137,6 +146,9 @@ browser.runtime.sendMessage({}, function (o) {
         var btnRateView = document.createElement('button')
         btnRateView.setAttribute('id', 'PlayBackRate')
         btnRateView.className = 'ysc-btn'
+        btnRateView.style.width = "auto"; 
+        btnRateView.style.minWidth = "40px";
+        btnRateView.style.padding = "0 5px";
 
         var btnDecreaseSpeed = document.createElement('button')
         btnDecreaseSpeed.setAttribute('id', 'SpeedDown')
@@ -270,6 +282,7 @@ browser.runtime.sendMessage({}, function (o) {
         }
 
         var box = document.getElementById('PlayBackRatePanel')
+        if (!box) return;
         var savedStyleDisplay = box.style.display
         if (savedStyleDisplay === 'none') {
           box.style.display = 'inline'
@@ -329,6 +342,58 @@ browser.runtime.sendMessage({}, function (o) {
           )
         ) {
           changeRate(RATE_ACTIONS.RESET)
+        }
+
+        else {
+          const isKey = (settingsKey) => 
+            settingsKey.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'));
+
+          let seekBase = 0;
+          let direction = 0;
+
+          if (isKey(state.settings.seekLeftKeyCode)) {
+            seekBase = state.settings.seekSmallStep;
+            direction = -1;
+          } else if (isKey(state.settings.seekRightKeyCode)) {
+            seekBase = state.settings.seekSmallStep;
+            direction = 1;
+          } else if (isKey(state.settings.seekRewindKeyCode)) {
+            seekBase = state.settings.seekLargeStep;
+            direction = -1;
+          } else if (isKey(state.settings.seekAdvanceKeyCode)) {
+            seekBase = state.settings.seekLargeStep;
+            direction = 1;
+          }
+
+          if (direction !== 0) {
+            var videoElems = document.getElementsByTagName('video');
+            var jumpAmount = 0;
+
+            for (let video of videoElems) {
+              jumpAmount = seekBase * video.playbackRate * direction;
+              video.currentTime += jumpAmount;
+            }
+
+            var rateView = document.getElementById('PlayBackRate');
+            var box = document.getElementById('PlayBackRatePanel');
+
+            if (rateView && box) {
+              var sign = jumpAmount > 0 ? "+" : "";
+              rateView.textContent = sign + Math.round(jumpAmount) + "s";
+              var oldDisplay = box.style.display;
+              box.style.display = 'inline';
+
+              if (feedbackTimeout) clearTimeout(feedbackTimeout);
+
+              feedbackTimeout = setTimeout(function() {
+                rateView.textContent = (getStateSpeed() / 100).toFixed(2);
+                box.style.display = oldDisplay === 'none' ? 'none' : 'inline';
+                feedbackTimeout = null;
+              }, 600);
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          }
         }
 
         return false

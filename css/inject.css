@@ -20,6 +20,11 @@
   height: 24px;
 }
 
+.ytdMiniplayerComponentHost .PlayBackRatePanel {
+  right: 35px;
+  top: 8px;
+}
+
 .ysc-btn {
   background: rgba(255, 255, 255, 0.5);
   height: 100%;

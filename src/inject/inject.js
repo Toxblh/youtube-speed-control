@@ -29,9 +29,6 @@ browser.runtime.sendMessage({}, function (o) {
     },
   }
 
-  var refInterval
-  var feedbackTimeout = null;
-
   const setStorage = (data) => {
     if (chrome) {
       return new Promise((resolve, reject) =>
@@ -69,7 +66,7 @@ browser.runtime.sendMessage({}, function (o) {
     state.settings.allowMouseWheel = Boolean(storage.allowMouseWheel)
     state.settings.mouseInvert = Boolean(storage.mouseInvert)
     state.settings.rememberSpeed = Boolean(storage.rememberSpeed)
-    refInterval = setInterval(refreshFn, 16)
+    initializeExtension()
   })
 
   function getStateSpeed() {
@@ -92,11 +89,12 @@ browser.runtime.sendMessage({}, function (o) {
     state.settings.speed = Number(value)
   }
 
-  function refreshFn() {
-    if (document.readyState === 'complete') {
-      clearInterval(refInterval)
-
+  function initializeExtension() {
       state.videoController = function (videoElem) {
+        // Prevent double-initialization
+        if (videoElem.dataset.yscInited) return;
+        videoElem.dataset.yscInited = "true";
+
         this.video = videoElem
         if (!state.settings.rememberSpeed) {
           setStateSpeed(100)
@@ -282,7 +280,7 @@ browser.runtime.sendMessage({}, function (o) {
         }
 
         var box = document.getElementById('PlayBackRatePanel')
-        if (!box) return;
+        if (!box) return
         var savedStyleDisplay = box.style.display
         if (savedStyleDisplay === 'none') {
           box.style.display = 'inline'
@@ -308,13 +306,6 @@ browser.runtime.sendMessage({}, function (o) {
         }
       }
 
-      function handleDOMInserted(e) {
-        var domInserted = e.target || null
-        if (domInserted && domInserted.nodeName === 'VIDEO') {
-          new state.videoController(domInserted)
-        }
-      }
-
       function handleKeyDown(e) {
         var keyPressed = e.which
         if (
@@ -330,18 +321,24 @@ browser.runtime.sendMessage({}, function (o) {
           )
         ) {
           changeRate(RATE_ACTIONS.FASTER)
+          e.preventDefault()
+          e.stopPropagation()
         } else if (
           state.settings.slowerKeyCode.match(
             new RegExp('(?:^|,)' + keyPressed + '(?:,|$)')
           )
         ) {
           changeRate(RATE_ACTIONS.SLOWER)
+          e.preventDefault()
+          e.stopPropagation()
         } else if (
           state.settings.resetKeyCode.match(
             new RegExp('(?:^|,)' + keyPressed + '(?:,|$)')
           )
         ) {
           changeRate(RATE_ACTIONS.RESET)
+          e.preventDefault()
+          e.stopPropagation()
         }
 
         else {
@@ -401,6 +398,7 @@ browser.runtime.sendMessage({}, function (o) {
 
       function onFullscreen() {
         var box = document.getElementById('PlayBackRatePanel')
+        if (!box) return
         if (document.fullscreenElement !== null) {
           box.className = 'PlayBackRatePanelFullScreen'
         } else {
@@ -413,16 +411,37 @@ browser.runtime.sendMessage({}, function (o) {
       }
 
       document.addEventListener('keydown', handleKeyDown, true)
-      document.addEventListener('DOMNodeInserted', handleDOMInserted)
       document.addEventListener('webkitfullscreenchange', onFullscreen, false)
       document.addEventListener('mozfullscreenchange', onFullscreen, false)
       document.addEventListener('fullscreenchange', onFullscreen, false)
 
-      var videoElements = document.getElementsByTagName('video')
-      for (let videoElement of videoElements) {
-        new state.videoController(videoElement)
+      function scanForVideos(root) {
+        if (root.nodeName === 'VIDEO') {
+          new state.videoController(root);
+        }
+        else if (root.getElementsByTagName) {
+          var videos = root.getElementsByTagName('video');
+          for (let video of videos) {
+            new state.videoController(video);
+          }
+        }
       }
-    }
+
+      // Use MutationObserver instead of DOMNodeInserted
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.addedNodes) {
+            for (var i = 0; i < mutation.addedNodes.length; i++) {
+              scanForVideos(mutation.addedNodes[i]);
+            }
+          }
+        });
+      });
+      
+      observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+
+      // Initial scan
+      scanForVideos(document);
   }
 })
 

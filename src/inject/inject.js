@@ -271,10 +271,16 @@ browser.runtime.sendMessage({}, function (o) {
 
         if (state.settings.fasterKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
           changeRate(RATE_ACTIONS.FASTER)
+          e.preventDefault()
+          e.stopPropagation()
         } else if (state.settings.slowerKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
           changeRate(RATE_ACTIONS.SLOWER)
+          e.preventDefault()
+          e.stopPropagation()
         } else if (state.settings.resetKeyCode.match(new RegExp('(?:^|,)' + keyPressed + '(?:,|$)'))) {
           changeRate(RATE_ACTIONS.RESET)
+          e.preventDefault()
+          e.stopPropagation()
         }
 
         return false
